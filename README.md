@@ -1,3 +1,42 @@
+# Conteo y Clasificación de Fauna en Imágenes Aéreas con Deep Learning:
+
+Este repositorio contiene la implementación, ajustes de fine-tuning y experimentaciones con la arquitectura HerdNet, otientadas al conteo y clasificación automática de 6 especies de animales a partir de imágenes aéreas.
+
+## Objetivo del Proyecto:
+
+Desarrollar un modelo de Deep Learning capaz de detectar y contar animales en imágenes aéreas de manera precisa, especialmente en escenarios de oclusión, distribución densa y clases desbalanceadas.
+
+## Estructura del repositorio:
+|--notebooks/
+||--experimento_0_fine_tuning_exp_2
+||--experimento_0_y_fine_tuning_exp_3
+||--experimento_0_y_Fine_Tuning_4
+|--models/
+||--herdnet_model_exp_1.pth
+||--herdnet_model_exp_2_OFFICIAL.pth
+||--herdnet_model_exp_3_OFFICIAL.pth
+||--herdnet_model_exp_4_OFFICIAL.pth
+
+## Data
+Se utiliza el dataset oficial del artículo https://dataverse.uliege.be/file.xhtml?fileId=11098&version=1.0 
+- **Clases**: búfalo, elefante, kob, topi, jabalí y antílope acuático
+- **División**: entrenamiento (157 imágenes), validación (111 imágenes), prueba (121 imágenes).
+
+## Modelos:
+- **Experimento 1:** 
+- **Experimento 2:** Ajuste fino superficial del modelo HerdNet, en donde se congelaron todas las capas del modelo para evitar que el entrenamiento efecte los pesos de la parte más profunda de la red y solo se permitieron actualizaciones en las últimas capas del modelo, específicamente en las últimas capas convolucionales del backbone (level5) y en la capa encargada de la clasificación final fc. Adicionalmente, se hizo una reducción de la Tasa de Aprendizaje a 1e-5, más bajo que el modelo anterior con el fin de evitar sobreajuste en las capas superiores, y se redujo la penalización weight decay de 5e-4 para mejorar la estabilidad del entrenamiento. En cuanto al optimizador, se creó un optimizador Adam que afectaría únicamente las capas descongeladas, asegurando que el modelo no pierda el conocimiento previo y se mantuvo el mismo número de épocas. 
+- **Experimento 3:** Fine-Tuning enfocado en la adaptación final, en donde se congelaron todas las capas del modelo para preservar los pesos previamente entrenados y se descongelaron las capas superficiales, correspondientes a los niveles level 4 y 5, y la capa de clasificación fc con el fin de especializar las salidas del modelo para el nuevo dominio. Con el objetivo de evitar el sobreajuste y permitir una adaptación controlada, se configuró una tasa de aprendizaje reducida (1e-5) y un parámetro de regularización weight decay de 5e-4. Además, se empleó una estrategia de aprendizaje diferencial con tasas distintas para cada bloque descongelado: 5e-6 para level4, 1e-5 para level5 y la capa fc. Esta segmentación permitió una refinación progresiva y controlada de los pesos. Se utilizó el optimizador AdamW y se implementó un agendador de tipo ReduceLROnPlateau, que ajusta dinámicamente la tasa de aprendizaje si la métrica de validación F1 Score deja de mejorar. El modelo fue entrenado durante 10 épocas, evaluando el desempeño en cada iteración y seleccionando como checkpoint el modelo con mejor F1 Score sobre el set de validación.  
+- **Experimento 4:** Entrenamiento enfocado en capas profundas: especialización controlada del modelo HerdNet, en donde se tuvo como objetivo evaluar el desempeño del modelo HerdNet bajo condiciones controladas, replicando parcialmente el entorno propuesto en el artículo de referencia. Para ello, se aplicó un fine-tunning dirigido en las capas profundas del modelo, específicamente en level4, level5, y fc, mientras que el resto de los parámetros se mantuvieron congelados para preservar el conocimiento previamente adquirido. Con el objetivo de optimizar la especialización de las capas descongeladas, se asignaron tasas de aprendizaje diferenciadas por grupo de capas, combinadas con el optimizador AdamW y un scheduler ReduceLROnPlateay, que ajustaba dinámicamente el aprendizaje en función del rendimiento del F1 Score en validación. Las tasas utilizadas fueron: 5e-6 para el level4, 1e-5 para el level5, 5e-5 para la capa final fc y 2e-4 como weight decay global. El entrenamiento se llevó a cabo durante 10 épocas, con validación al finalizar cada una y selección automática del mejor modelo con base en el F1 Score más alto obtenido, la cual, demostró una mejora significativa en la capacidad de generalización del modelo frente a otras versiones con fine-tuning, mostrando una mayor precisión en la detección de objetos en el conjunto de prueba.
+
+## Hallazgos relevantes:
+- El fine-tuning parcial, manteniendo capas profundas congeladas, permite mejorar la especialización sin degradar el conocimiento general.
+- El uso de tasas de aprendizaje diferenciadas por capa potencia la estabilidad del entrenamiento.
+- Las clases con menor representación muestran menor desempeño, sugiriendo la necesidad de técnicas de balanceo u obtener más muestras de las mismas.
+
+
+
+#########ANTERIOR VERSIÓN:#########################
+
 Propuesta de proyecto en visión artificial
 
 
